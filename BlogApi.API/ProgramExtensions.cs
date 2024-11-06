@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using System.Xml.Serialization;
+using BlogApi.Application.Common.Settings;
+using BlogApi.Application.Helper;
 using BlogApi.Application.Interfaces;
 using BlogApi.Application.Services;
 using BlogApi.Infrastructure.Persistence;
@@ -19,11 +21,13 @@ public static class ProgramExtensions
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddHttpContextAccessor();
+        services.Configure<BaseSettings>(configuration.GetSection("BaseSettings"));
         
         var connectionString = configuration.GetConnectionString("BlogConnection");
         services.AddDbContext<BlogContext>(options => options.UseNpgsql(connectionString));
         
         services.AddScoped<BlogRepo>();
+        services.AddScoped<TokenHelper>();
         services.AddScoped<UserRepo>();
         services.AddScoped<CategoryRepo>();
         services.AddScoped<CommentRepo>();
@@ -102,7 +106,7 @@ public static class ProgramExtensions
 
         using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var blogContext = scope.ServiceProvider.GetRequiredService<BlogContext>();
-        await SeedData.SeedDatabaseAsync(blogContext);
+        await blogContext.SeedDatabaseAsync();
 
         app.UseHttpsRedirection();
         app.UseRouting();

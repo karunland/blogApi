@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlogApi.Infrastructure.Persistence.Repositories;
 
-public class UserRepo(BlogContext context, ICurrentUserService currentUserService)
+public class UserRepo(BlogContext context, ICurrentUserService currentUserService, TokenHelper tokenService)
 {
     public async Task<ApiResult> Register(UserAddDto user)
     {
@@ -29,15 +29,28 @@ public class UserRepo(BlogContext context, ICurrentUserService currentUserServic
         return ApiResult.Success();
     }
     
-    public async Task<ApiResult> Login(UserLoginDto user)
+    public async Task<ApiResult<MeDto>> Login(UserLoginDto user)
     {
         var User = await context.Users.FirstOrDefaultAsync(x => x.Email == user.Email && x.Password == user.Password.ToSha1());
         if (User == null)
         {
             return ApiError.Failure(Messages.NotFound, HttpStatusCode.NotFound);
         }
-
-        return ApiResult.Success();
+        
+        return new MeDto
+        {
+            Email = User.Email,
+            FirstName = User.FirstName,
+            LastName = User.LastName,
+            UserName = User.Username,
+            Token = tokenService.GenerateToken(new JwtTokenDto()
+            {
+                Email = User.Email,
+                FirstName = User.FirstName,
+                LastName = User.LastName,
+                Id = User.Id
+            })
+        };
     }
     
     public async Task<ApiResult<UserDto>> me()
