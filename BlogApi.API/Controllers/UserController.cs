@@ -27,7 +27,7 @@ public class UserController(UserRepo userRepo) : BaseApiController
     [HttpGet("me")]
     public async Task<ApiResult<UserDto>> me()
     {
-        return await userRepo.me();
+        return await userRepo.Me();
     }
     
 }

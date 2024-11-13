@@ -12,7 +12,6 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 builder.Services.AddStartupServices(builder.Configuration);
-builder.Services.AddScoped<TokenHelper>();
 var app = builder.Build();
 await app.UseAppServicesAsync(configuration, app.Environment);
 

@@ -27,7 +27,6 @@ public static class ProgramExtensions
         services.AddDbContext<BlogContext>(options => options.UseNpgsql(connectionString));
         
         services.AddScoped<BlogRepo>();
-        services.AddScoped<TokenHelper>();
         services.AddScoped<UserRepo>();
         services.AddScoped<CategoryRepo>();
         services.AddScoped<CommentRepo>();

@@ -9,20 +9,31 @@ namespace BlogApi.Infrastructure.Persistence.Repositories;
 
 public class BlogRepo(BlogContext context, ICurrentUserService currentUserService)
 {
-    public async Task<ApiResultPagination<BlogsDto>> GetAll(int page, int pageSize)
+    public async Task<ApiResultPagination<BlogsDto>> GetAll(BlogFilterModel filter)
     {
-        var blogs = context.Blogs
+        var blogs = context.Categories.Where(x => filter.CategoryIds.Contains(x.Id))
             .Select(x => new BlogsDto
             {
                 Id = x.Id,
                 Title = x.Title,
-                slug = x.slug,
                 Content = x.Content,
                 CreatedAt = x.CreatedAt,
                 AuthorName = x.User.FullName
             });
+            
 
-        return await blogs.PaginatedListAsync(page, pageSize);
+        if (!string.IsNullOrEmpty(filter.Search))
+        {
+            blogs = blogs.Where(x => x.Title.Contains(filter.Search));
+        }
+        
+        // category filter
+        if (filter.CategoryIds.Count > 0)
+        {
+            blogs = blogs.Where(a => a.AuthorName));
+        }
+
+        return await blogs.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
 
     public async Task<ApiResult> Create(BlogAddDto blog)

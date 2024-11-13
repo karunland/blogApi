@@ -9,21 +9,20 @@ using Microsoft.IdentityModel.Tokens;
 namespace BlogApi.Application.Helper;
 
 
-public class TokenHelper(BaseSettings baseSettings, IHttpContextAccessor context)
+public static class TokenHelper
 {
 
-    public string GenerateToken(JwtTokenDto user)
+    public static string GenerateToken(JwtTokenDto user)
     {
-        var jwtSecret = baseSettings.JwtSecret;
+        var jwtSecret = "F833F51D8A55AA8D8EFACBB72AE3C2A863BA577C2F16E22495356C7FFD";
 
         JwtSecurityTokenHandler tokenHandler = new();
         var key = Encoding.ASCII.GetBytes(jwtSecret);
         SecurityTokenDescriptor tokenDescriptor = new()
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
+            Subject = new ClaimsIdentity([
                 new("LoggedInUser", user.ToJson().ToCryptoText())
-            }),
+            ]),
             Expires = DateTime.Now.AddDays(30),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
