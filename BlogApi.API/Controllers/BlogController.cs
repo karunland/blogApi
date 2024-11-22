@@ -1,12 +1,28 @@
 ﻿using BlogApi.Application.DTOs;
 using BlogApi.Application.DTOs.Blog;
 using BlogApi.Infrastructure.Persistence.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogApi.Controllers;
 
 public class BlogController(BlogRepo blogRepo) : BaseApiController
 {
+    
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ApiResultPagination<BlogsDto>> GetAll(BlogFilterModel filter)
+    {
+        return await blogRepo.GetAll(filter);
+    }
+    
+    [HttpGet("{slug}")]
+    [AllowAnonymous]
+    public async Task<ApiResult<BlogsDto>> GetBySlug(string slug)
+    {
+        return await blogRepo.Detail(slug);
+    }
+    
     [HttpPost]
     public async Task<ApiResult> Create(BlogAddDto blog)
     {
@@ -19,16 +35,10 @@ public class BlogController(BlogRepo blogRepo) : BaseApiController
         return await blogRepo.Update(blog);
     }
     
-    [HttpPost("{id}")]
-    public async Task<ApiResult> Delete(int id)
+    [HttpPost("{slug}")]
+    public async Task<ApiResult> Delete(string slug)
     {
-        return await blogRepo.Delete(id);
-    }
-    
-    [HttpGet]
-    public async Task<ApiResultPagination<BlogsDto>> GetAll()
-    {
-        return await blogRepo.GetAll();
+        return await blogRepo.Delete(slug);
     }
     
 }

@@ -1,9 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BlogApi.Application.Common.Settings;
 using BlogApi.Application.DTOs.User;
-using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BlogApi.Application.Helper;

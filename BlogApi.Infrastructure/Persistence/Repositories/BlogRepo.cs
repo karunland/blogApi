@@ -1,6 +1,7 @@
 ﻿using BlogApi.Application.Common.Messages;
 using BlogApi.Application.DTOs;
 using BlogApi.Application.DTOs.Blog;
+using BlogApi.Application.DTOs.Category;
 using BlogApi.Application.Interfaces;
 using BlogApi.Core.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
 {
     public async Task<ApiResultPagination<BlogsDto>> GetAll(BlogFilterModel filter)
     {
-        var blogs = context.Categories.Where(x => filter.CategoryIds.Contains(x.Id))
+        var blogs = context.Blogs.Where(x => x.Categories.Any(a => filter.CategoryIds.Contains(a.Id)))
             .Select(x => new BlogsDto
             {
                 Id = x.Id,
@@ -20,19 +21,12 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
                 CreatedAt = x.CreatedAt,
                 AuthorName = x.User.FullName
             });
-            
 
         if (!string.IsNullOrEmpty(filter.Search))
         {
             blogs = blogs.Where(x => x.Title.Contains(filter.Search));
         }
         
-        // category filter
-        if (filter.CategoryIds.Count > 0)
-        {
-            blogs = blogs.Where(a => a.AuthorName));
-        }
-
         return await blogs.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
 
@@ -103,9 +97,9 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
         return ApiResult.Success();
     }
 
-    public async Task<ApiResult> Delete(int id)
+    public async Task<ApiResult> Delete(string slug)
     {
-        var blogToDelete = await context.Blogs.FindAsync(id);
+        var blogToDelete = await context.Blogs.FindAsync(slug);
 
         if (blogToDelete == null)
         {
@@ -121,10 +115,10 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
         return ApiResult.Success();
     }
     
-    public async Task<ApiResult<BlogsDto>> Detail(int id)
+    public async Task<ApiResult<BlogsDto>> Detail(string slug)
     {
         var blog = await context.Blogs
-            .Where(x => x.Id == id)
+            .Where(x => x.slug == slug)
             .Select(x => new BlogsDto
             {
                 Id = x.Id,
@@ -141,5 +135,19 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
         }
 
         return blog;
+    }
+
+    public async Task<ApiResult<List<CategoriesDto>>> GetAllCategories()
+    {
+        var categories = await context.Categories
+            .Select(x => new CategoriesDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                CreatedAt = x.CreatedAt
+            })
+            .ToListAsync();
+
+        return categories;
     }
 }

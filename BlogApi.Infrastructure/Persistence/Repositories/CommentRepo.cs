@@ -3,6 +3,7 @@ using BlogApi.Application.DTOs;
 using BlogApi.Application.DTOs.Comment;
 using BlogApi.Application.Interfaces;
 using BlogApi.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogApi.Infrastructure.Persistence.Repositories;
 
@@ -24,10 +25,10 @@ public class CommentRepo(BlogContext context, ICurrentUserService currentUserSer
         return ApiResult.Success();
     }
     
-    public async Task<ApiResultPagination<CommentsDto>> GetByBlogId(int blogId, int page, int pageSize)
+    public async Task<ApiResultPagination<CommentsDto>> GetByBlogId(string slug, FilterModel filter)
     {
         var comments = context.Comments
-            .Where(x => x.BlogId == blogId)
+            .Where(x => x.Blog.slug == slug)
             .Select(x => new CommentsDto
             {
                 Id = x.Id,
@@ -36,26 +37,12 @@ public class CommentRepo(BlogContext context, ICurrentUserService currentUserSer
                 AuthorName = x.User.FullName
             });
 
-        return await comments.PaginatedListAsync(page, pageSize);
-    }
-    
-    public async Task<ApiResult> Delete(int id)
-    {
-        var comment = await context.Comments.FindAsync(id);
-        if (comment == null)
-        {
-            return ApiError.Failure(Messages.NotFound);
-        }
-
-        context.Comments.Remove(comment);
-        await context.SaveChangesAsync();
-
-        return ApiResult.Success();
+        return await comments.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
     
     public async Task<ApiResult> Update(int id, CommentAddDto comment)
     {
-        var commentToUpdate = await context.Comments.FindAsync(id);
+        var commentToUpdate = await context.Comments.SingleOrDefaultAsync(x => x.Id == id && x.UserId == currentUserService.Id);
         if (commentToUpdate == null)
         {
             return ApiError.Failure(Messages.NotFound);
@@ -67,14 +54,17 @@ public class CommentRepo(BlogContext context, ICurrentUserService currentUserSer
         return ApiResult.Success();
     }
     
-    public async Task<ApiResult> DeleteByBlogId(int blogId)
+    public async Task<ApiResult> Delete(int id)
     {
-        var comments = context.Comments.Where(x => x.BlogId == blogId);
-        context.Comments.RemoveRange(comments);
+        var comment = await context.Comments.SingleOrDefaultAsync(x => x.UserId == currentUserService.Id && x.Id == id);
+        if (comment == null)
+        {
+            return ApiError.Failure(Messages.NotFound);
+        }
+
+        context.Comments.Remove(comment);
         await context.SaveChangesAsync();
 
         return ApiResult.Success();
     }
-    
-    
 }

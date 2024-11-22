@@ -7,7 +7,6 @@ namespace BlogApi.Infrastructure.Persistence.Repositories;
 
 public class CategoryRepo(BlogContext context)
 {
-    //create
     public async Task<ApiResult> Create(CategoryAddDto category)
     {
         var newCategory = new Category
@@ -22,8 +21,7 @@ public class CategoryRepo(BlogContext context)
         return ApiResult.Success();
     }
     
-    //get all
-    public async Task<ApiResultPagination<CategoriesDto>> GetAll(int page, int pageSize)
+    public async Task<ApiResultPagination<CategoriesDto>> GetAll(FilterModel filter)
     {
         var categories = context.Categories
             .Select(x => new CategoriesDto
@@ -33,10 +31,9 @@ public class CategoryRepo(BlogContext context)
                 CreatedAt = x.CreatedAt
             });
 
-        return await categories.PaginatedListAsync(page, pageSize);
+        return await categories.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
     
-    // delete
     public async Task<ApiResult> Delete(int id)
     {
         var category = await context.Categories.FindAsync(id);
