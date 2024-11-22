@@ -24,13 +24,14 @@ public static class ProgramExtensions
         services.Configure<BaseSettings>(configuration.GetSection("BaseSettings"));
         
         var connectionString = configuration.GetConnectionString("BlogConnection");
-        services.AddDbContext<BlogContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<BlogContext>(options => options.UseInMemoryDatabase(connectionString));
         
         services.AddScoped<BlogRepo>();
         services.AddScoped<UserRepo>();
         services.AddScoped<CategoryRepo>();
         services.AddScoped<CommentRepo>();
         services.AddSingleton<FileRepo>();
+        services.AddScoped<FileService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         
         services.AddSwaggerGen(swagger =>

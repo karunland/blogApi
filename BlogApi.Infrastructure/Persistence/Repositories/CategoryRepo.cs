@@ -5,7 +5,11 @@ using BlogApi.Core.Entities;
 
 namespace BlogApi.Infrastructure.Persistence.Repositories;
 
-public class CategoryRepo(BlogContext context)
+public partial class CategoryRepo
+{
+}
+
+public partial class CategoryRepo(BlogContext context)
 {
     public async Task<ApiResult> Create(CategoryAddDto category)
     {
@@ -20,7 +24,7 @@ public class CategoryRepo(BlogContext context)
 
         return ApiResult.Success();
     }
-    
+
     public async Task<ApiResultPagination<CategoriesDto>> GetAll(FilterModel filter)
     {
         var categories = context.Categories
@@ -33,7 +37,7 @@ public class CategoryRepo(BlogContext context)
 
         return await categories.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
-    
+
     public async Task<ApiResult> Delete(int id)
     {
         var category = await context.Categories.FindAsync(id);
@@ -47,6 +51,4 @@ public class CategoryRepo(BlogContext context)
 
         return ApiResult.Success();
     }
-    
-    
 }

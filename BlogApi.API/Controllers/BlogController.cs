@@ -8,6 +8,20 @@ namespace BlogApi.Controllers;
 
 public class BlogController(BlogRepo blogRepo) : BaseApiController
 {
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ApiResultPagination<BlogsDto>> List(BlogFilterModel filter)
+    {
+        return await blogRepo.GetAll(filter);
+    }
+    
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<ApiResult<BlogsDto>> GetBySlug([FromRoute] string slug)
+    {
+        return await blogRepo.Detail(slug);
+    }
+    
     
     [HttpGet]
     [AllowAnonymous]
@@ -35,8 +49,8 @@ public class BlogController(BlogRepo blogRepo) : BaseApiController
         return await blogRepo.Update(blog);
     }
     
-    [HttpPost("{slug}")]
-    public async Task<ApiResult> Delete(string slug)
+    [HttpDelete]
+    public async Task<ApiResult> Delete([FromRoute] string slug)
     {
         return await blogRepo.Delete(slug);
     }

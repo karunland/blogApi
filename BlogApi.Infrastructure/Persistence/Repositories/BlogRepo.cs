@@ -47,23 +47,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
         return ApiResult.Success();
     }
 
-    public async Task<ApiResultPagination<BlogsDto>> GetBySlug(string slug, int page, int pageSize)
-    {
-        var blogs = context.Blogs
-            .Where(x => x.slug == slug)
-            .Select(x => new BlogsDto
-            {
-                Id = x.Id,
-                Title = x.Title,
-                Content = x.Content,
-                CreatedAt = x.CreatedAt,
-                AuthorName = x.User.FullName
-            });
-
-        return await blogs.PaginatedListAsync(page, pageSize);
-    }
-
-    public async Task<ApiResultPagination<BlogsDto>> MyBlogs(int page, int pageSize)
+    public async Task<ApiResultPagination<BlogsDto>> MyBlogs(FilterModel filter)
     {
         var blogs = context.Blogs
             .Where(x => x.UserId == currentUserService.Id)
@@ -76,7 +60,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
                 AuthorName = x.User.FullName
             });
 
-        return await blogs.PaginatedListAsync(page, pageSize);
+        return await blogs.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
 
     public async Task<ApiResult> Update(BlogUpdateDto blog)
