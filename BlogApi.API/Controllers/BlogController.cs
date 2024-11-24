@@ -30,13 +30,6 @@ public class BlogController(BlogRepo blogRepo) : BaseApiController
         return await blogRepo.GetAll(filter);
     }
     
-    [HttpGet("{slug}")]
-    [AllowAnonymous]
-    public async Task<ApiResult<BlogsDto>> GetBySlug(string slug)
-    {
-        return await blogRepo.Detail(slug);
-    }
-    
     [HttpPost]
     public async Task<ApiResult> Create(BlogAddDto blog)
     {

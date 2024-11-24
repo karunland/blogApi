@@ -17,13 +17,6 @@ public class UserController(UserRepo userRepo, BlogRepo blogRepo) : BaseApiContr
         return result;
     }
     
-    [HttpPut]
-    public async Task<ApiResult> Update(UserAddDto user)
-    {
-        return await userRepo.Update(user);
-    }
-    
-    
     [HttpPost]
     [AllowAnonymous]
     public async Task<ApiResult<MeDto>> Login(UserLoginDto user)
