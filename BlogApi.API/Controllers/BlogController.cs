@@ -10,22 +10,21 @@ public class BlogController(BlogRepo blogRepo) : BaseApiController
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ApiResultPagination<BlogsDto>> List(BlogFilterModel filter)
+    public async Task<ApiResultPagination<BlogsDto>> List([FromQuery] BlogFilterModel filter)
     {
         return await blogRepo.GetAll(filter);
     }
     
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ApiResult<BlogsDto>> GetBySlug([FromRoute] string slug)
+    public async Task<ApiResult<BlogsDto>> GetBySlug([FromQuery] string slug)
     {
         return await blogRepo.Detail(slug);
     }
     
-    
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ApiResultPagination<BlogsDto>> GetAll(BlogFilterModel filter)
+    public async Task<ApiResultPagination<BlogsDto>> GetAll([FromQuery] BlogFilterModel filter)
     {
         return await blogRepo.GetAll(filter);
     }

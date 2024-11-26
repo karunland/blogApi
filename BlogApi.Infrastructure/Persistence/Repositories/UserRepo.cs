@@ -12,7 +12,7 @@ using Messages = BlogApi.Application.Common.Messages.Messages;
 
 namespace BlogApi.Infrastructure.Persistence.Repositories;
 
-public class UserRepo(BlogContext context, ICurrentUserService currentUserService, FileService fileService)
+public class UserRepo(BlogContext context, ICurrentUserService currentUserService, FileRepo fileRepo)
 {
     public async Task<ApiResult> Register(UserAddDto user)
     {
@@ -32,7 +32,7 @@ public class UserRepo(BlogContext context, ICurrentUserService currentUserServic
         
         if (user.Image != null)
         {
-            var response =  await fileService.UploadFileAsync(new UploadFileAsyncDto
+            var response =  await fileRepo.UploadFileAsync(new UploadFileAsyncDto
             {
                 File = user.Image,
                 Type = FileTypeEnum.ProfilePicture
@@ -88,6 +88,7 @@ public class UserRepo(BlogContext context, ICurrentUserService currentUserServic
         
         return new UserDto
         {
+            Id = user.Id,
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
@@ -100,17 +101,16 @@ public class UserRepo(BlogContext context, ICurrentUserService currentUserServic
         var currentUser = await context.Users.FindAsync(currentUserService.Id);
         
         if (currentUser == null)
-        {
             return ApiError.Failure(Messages.NotFound);
-        }
         
         currentUser.FirstName = user.FirstName;
         currentUser.LastName = user.LastName;
         currentUser.Username = user.UserName;
+        currentUser.UpdatedAt = DateTime.UtcNow;
         
         if (user.Image != null)
         {
-            var response =  await fileService.UploadFileAsync(new UploadFileAsyncDto
+            var response =  await fileRepo.UploadFileAsync(new UploadFileAsyncDto
             {
                 File = user.Image,
                 Type = FileTypeEnum.ProfilePicture

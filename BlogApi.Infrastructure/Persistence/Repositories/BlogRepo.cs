@@ -12,14 +12,18 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
 {
     public async Task<ApiResultPagination<BlogsDto>> GetAll(BlogFilterModel filter)
     {
-        var blogs = context.Blogs.Where(x => x.Categories.Any(a => filter.CategoryIds.Contains(a.Id)))
+        var blogs = context.Blogs
+            .OrderByDescending(x => x.UpdatedAt)
+            .ThenByDescending(x => x.CreatedAt)
             .Select(x => new BlogsDto
             {
                 Id = x.Id,
                 Title = x.Title,
                 Content = x.Content,
                 CreatedAt = x.CreatedAt,
-                AuthorName = x.User.FullName
+                AuthorName = x.User.FullName,
+                slug = x.slug,
+                UpdatedAt = x.UpdatedAt ?? x.CreatedAt
             });
 
         if (!string.IsNullOrEmpty(filter.Search))
@@ -37,8 +41,9 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
             Title = blog.Title,
             Content = blog.Content,
             UserId = currentUserService.Id,
+            BlogStatusEnum = blog.Status,
             slug = blog.Title,
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
         };
 
         await context.Blogs.AddAsync(newBlog);
@@ -51,13 +56,16 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
     {
         var blogs = context.Blogs
             .Where(x => x.UserId == currentUserService.Id)
+            .OrderByDescending(x => x.UpdatedAt)
+            .ThenByDescending(x => x.CreatedAt)
             .Select(x => new BlogsDto
             {
                 Id = x.Id,
                 Title = x.Title,
                 Content = x.Content,
                 CreatedAt = x.CreatedAt,
-                AuthorName = x.User.FullName
+                AuthorName = x.User.FullName,
+                slug = x.slug
             });
 
         return await blogs.PaginatedListAsync(filter.PageNumber, filter.PageSize);
@@ -74,7 +82,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
 
         blogToUpdate.Title = blog.Title;
         blogToUpdate.Content = blog.Content;
-        blogToUpdate.UpdatedAt = DateTime.Now;
+        blogToUpdate.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();
 
@@ -90,7 +98,6 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
             return ApiError.Failure(Messages.NotFound);
         }
 
-        // TODO: Context interceptor for soft delete
         blogToDelete.IsDeleted = true;
         blogToDelete.DeletedAt = DateTime.UtcNow;
 
@@ -114,24 +121,8 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
             .FirstOrDefaultAsync();
 
         if (blog == null)
-        {
             return ApiError.Failure(Messages.NotFound);
-        }
 
         return blog;
-    }
-
-    public async Task<ApiResult<List<CategoriesDto>>> GetAllCategories()
-    {
-        var categories = await context.Categories
-            .Select(x => new CategoriesDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                CreatedAt = x.CreatedAt
-            })
-            .ToListAsync();
-
-        return categories;
     }
 }

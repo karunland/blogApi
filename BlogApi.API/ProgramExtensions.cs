@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using System.Xml.Serialization;
 using BlogApi.Application.Common.Settings;
-using BlogApi.Application.Helper;
 using BlogApi.Application.Interfaces;
 using BlogApi.Application.Services;
 using BlogApi.Infrastructure.Persistence;
@@ -24,19 +22,21 @@ public static class ProgramExtensions
         services.Configure<BaseSettings>(configuration.GetSection("BaseSettings"));
         
         var connectionString = configuration.GetConnectionString("BlogConnection");
-        services.AddDbContext<BlogContext>(options => options.UseInMemoryDatabase(connectionString));
+        services.AddDbContext<BlogContext>(options =>
+        {
+            if (connectionString != null) options.UseInMemoryDatabase(connectionString);
+        });
         
         services.AddScoped<BlogRepo>();
         services.AddScoped<UserRepo>();
         services.AddScoped<CategoryRepo>();
         services.AddScoped<CommentRepo>();
         services.AddSingleton<FileRepo>();
-        services.AddScoped<FileService>();
+        services.AddScoped<FileRepo>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         
         services.AddSwaggerGen(swagger =>
         {
-            // swagger.EnableAnnotations();
             swagger.SwaggerDoc("v1",
                 new OpenApiInfo
                 {
@@ -107,7 +107,8 @@ public static class ProgramExtensions
         using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var blogContext = scope.ServiceProvider.GetRequiredService<BlogContext>();
         await blogContext.SeedDatabaseAsync();
-
+        
+        app.UseCors("AllowAllOrigins");
         app.UseHttpsRedirection();
         app.UseRouting();
         app.UseAuthentication();

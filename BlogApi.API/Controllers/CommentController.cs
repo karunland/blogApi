@@ -10,7 +10,7 @@ public class CommentController(CommentRepo commentRepo) : BaseApiController
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ApiResultPagination<CommentsDto>> GetAll([FromRoute] string blogSlug, FilterModel filter)
+    public async Task<ApiResultPagination<CommentsDto>> GetAll([FromQuery] string blogSlug, [FromQuery] FilterModel filter)
     {
         return await commentRepo.GetByBlogId(blogSlug, filter);
     }
@@ -19,6 +19,12 @@ public class CommentController(CommentRepo commentRepo) : BaseApiController
     public async Task<ApiResult> Create(CommentAddDto comment)
     {
         return await commentRepo.Create(comment);
+    }
+    
+    [HttpPost]
+    public async Task<ApiResult> Update(CommentAddDto comment)
+    {
+        return await commentRepo.Update(comment);
     }
 
     [HttpDelete]

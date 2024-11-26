@@ -16,7 +16,7 @@ public partial class CategoryRepo(BlogContext context)
         var newCategory = new Category
         {
             Name = category.Name,
-            CreatedAt = DateTime.Now
+            CreatedAt = DateTime.UtcNow
         };
 
         await context.Categories.AddAsync(newCategory);

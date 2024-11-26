@@ -17,6 +17,13 @@ public class UserController(UserRepo userRepo, BlogRepo blogRepo) : BaseApiContr
         return result;
     }
     
+    // update
+    [HttpPost]
+    public async Task<ApiResult> Update(UserAddDto user)
+    {
+        return await userRepo.Update(user);
+    }
+    
     [HttpPost]
     [AllowAnonymous]
     public async Task<ApiResult<MeDto>> Login(UserLoginDto user)
@@ -31,7 +38,7 @@ public class UserController(UserRepo userRepo, BlogRepo blogRepo) : BaseApiContr
     }
     
     [HttpGet]
-    public async Task<ApiResultPagination<BlogsDto>> Blogs(FilterModel filter)
+    public async Task<ApiResultPagination<BlogsDto>> Blogs([FromQuery] FilterModel filter)
     {
         return await blogRepo.MyBlogs(filter);
     }
