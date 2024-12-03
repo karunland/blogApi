@@ -10,7 +10,7 @@ public class CommentController(CommentRepo commentRepo) : BaseApiController
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ApiResultPagination<CommentsDto>> GetAll([FromQuery] string blogSlug, [FromQuery] FilterModel filter)
+    public async Task<ApiResultPagination<CommentsDto>> List([FromQuery] string blogSlug, [FromQuery] FilterModel filter)
     {
         return await commentRepo.GetByBlogId(blogSlug, filter);
     }

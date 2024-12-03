@@ -1,7 +1,6 @@
 ﻿using BlogApi.Application.Common.Messages;
 using BlogApi.Application.DTOs;
 using BlogApi.Application.DTOs.Blog;
-using BlogApi.Application.DTOs.Category;
 using BlogApi.Application.Interfaces;
 using BlogApi.Core.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -22,15 +21,13 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
                 Content = x.Content,
                 CreatedAt = x.CreatedAt,
                 AuthorName = x.User.FullName,
-                slug = x.slug,
+                slug = x.Slug,
                 UpdatedAt = x.UpdatedAt ?? x.CreatedAt
             });
 
-        if (!string.IsNullOrEmpty(filter.Search))
-        {
+        if (!string.IsNullOrEmpty(filter.Search)) 
             blogs = blogs.Where(x => x.Title.Contains(filter.Search));
-        }
-        
+
         return await blogs.PaginatedListAsync(filter.PageNumber, filter.PageSize);
     }
 
@@ -42,8 +39,8 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
             Content = blog.Content,
             UserId = currentUserService.Id,
             BlogStatusEnum = blog.Status,
-            slug = blog.Title,
-            CreatedAt = DateTime.UtcNow,
+            Slug = blog.Title,
+            CreatedAt = DateTime.UtcNow
         };
 
         await context.Blogs.AddAsync(newBlog);
@@ -65,7 +62,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
                 Content = x.Content,
                 CreatedAt = x.CreatedAt,
                 AuthorName = x.User.FullName,
-                slug = x.slug
+                slug = x.Slug
             });
 
         return await blogs.PaginatedListAsync(filter.PageNumber, filter.PageSize);
@@ -75,10 +72,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
     {
         var blogToUpdate = await context.Blogs.FindAsync(blog.Id);
 
-        if (blogToUpdate == null)
-        {
-            return ApiError.Failure(Messages.NotFound);
-        }
+        if (blogToUpdate == null) return ApiError.Failure(Messages.NotFound);
 
         blogToUpdate.Title = blog.Title;
         blogToUpdate.Content = blog.Content;
@@ -93,10 +87,7 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
     {
         var blogToDelete = await context.Blogs.FindAsync(slug);
 
-        if (blogToDelete == null)
-        {
-            return ApiError.Failure(Messages.NotFound);
-        }
+        if (blogToDelete == null) return ApiError.Failure(Messages.NotFound);
 
         blogToDelete.IsDeleted = true;
         blogToDelete.DeletedAt = DateTime.UtcNow;
@@ -105,11 +96,11 @@ public class BlogRepo(BlogContext context, ICurrentUserService currentUserServic
 
         return ApiResult.Success();
     }
-    
+
     public async Task<ApiResult<BlogsDto>> Detail(string slug)
     {
         var blog = await context.Blogs
-            .Where(x => x.slug == slug)
+            .Where(x => x.Slug == slug)
             .Select(x => new BlogsDto
             {
                 Id = x.Id,

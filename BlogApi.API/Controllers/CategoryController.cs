@@ -10,7 +10,7 @@ public class CategoryController(CategoryRepo categoryRepo) : BaseApiController
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ApiResultPagination<CategoriesDto>> GetAll([FromQuery] FilterModel filter)
+    public async Task<ApiResultPagination<CategoriesDto>> List([FromQuery] FilterModel filter)
     {
         return await categoryRepo.GetAll(filter);
     }

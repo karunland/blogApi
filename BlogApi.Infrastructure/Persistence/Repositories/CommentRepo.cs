@@ -29,7 +29,7 @@ public class CommentRepo(BlogContext context, ICurrentUserService currentUserSer
     public async Task<ApiResultPagination<CommentsDto>> GetByBlogId(string slug, FilterModel filter)
     {
         var comments = context.Comments
-            .Where(x => x.Blog.slug == slug)
+            .Where(x => x.Blog.Slug == slug)
             .OrderByDescending(x => x.CreatedAt)
             .Select(x => new CommentsDto
             {
